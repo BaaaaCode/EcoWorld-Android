@@ -1,73 +1,74 @@
 package com.example.ecoworld
 
-// ✅ [1] Import 문 (맨 위에 추가)
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.result.contract.ActivityResultContracts
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.example.ecoworld.api.*
 import com.example.ecoworld.databinding.ActivityMainBinding
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
+import com.google.gson.GsonBuilder
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
-    // ✅ [2] 변수 선언 (onCreate 바깥, 클래스 내부)
     private lateinit var binding: ActivityMainBinding
-    private lateinit var googleSignInClient: GoogleSignInClient
-    private lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        firebaseAuth = FirebaseAuth.getInstance()
+        // ✅ [보조 기능] 분리수거 분류 화면 이동 (현재 비활성화, 필요 시 주석 해제)
+        /*
+        binding.btnCategory.setOnClickListener {
+            val intent = Intent(this, CategoryActivity::class.java)
+            startActivity(intent)
+        }
+        */
 
-        // ✅ [3] Google Sign-In 옵션 설정
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id)) // Web Client ID (Firebase 콘솔에서 확인)
-            .requestEmail()
-            .build()
-
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-        // ✅ [4] 로그인 버튼 클릭 리스너
-        binding.btnGoogleLogin.setOnClickListener {
-            signInWithGoogle()
+        // ✅ [주요 기능] 챗봇 테스트 API 호출
+        binding.btnChatbot.setOnClickListener {
+            val intent = Intent(this, ChatBotActivity::class.java)
+            startActivity(intent)
         }
     }
 
-    // ✅ [5] 로그인 결과 처리 (onCreate 바깥에 추가)
-    private val signInLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        if (task.isSuccessful) {
-            val account: GoogleSignInAccount? = task.result
-            account?.let { firebaseAuthWithGoogle(it) }
-        }
-    }
+    // ✅ Gemini API 호출 함수 (테스트용)
+    private fun callGeminiAPI() {
+        val apiKey = BuildConfig.GEMINI_API_KEY  // build.gradle.kts에 선언한 Key 사용
+        Log.d("API_KEY_CHECK", "API KEY: $apiKey")
 
-    private fun signInWithGoogle() {
-        val signInIntent = googleSignInClient.signInIntent
-        signInLauncher.launch(signInIntent)
-    }
+        val apiService = RetrofitClient.getClient(apiKey)
 
-    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount) {
-        val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-        firebaseAuth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // ✅ 로그인 성공
-                    val user = firebaseAuth.currentUser
-                    binding.testText.text = "로그인 성공: ${user?.displayName}"
+        val request = GeminiRequest(
+            contents = listOf(
+                GeminiContent(
+                    parts = listOf(
+                        GeminiPart("이 플라스틱 컵은 어떻게 버려야 해?")
+                    )
+                )
+            )
+        )
+
+        // ✅ JSON 요청 내용 로그 출력
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        Log.d("FINAL_REQUEST_JSON", gson.toJson(request))
+
+        apiService.askGemini(request).enqueue(object : Callback<GeminiResponse> {
+            override fun onResponse(call: Call<GeminiResponse>, response: Response<GeminiResponse>) {
+                if (response.isSuccessful) {
+                    val answer = response.body()?.candidates?.getOrNull(0)?.get("content")
+                    binding.testText.text = answer ?: "답변 없음"
                 } else {
-                    binding.testText.text = "로그인 실패"
+                    binding.testText.text = "API 호출 실패: ${response.code()}"
                 }
             }
+
+            override fun onFailure(call: Call<GeminiResponse>, t: Throwable) {
+                binding.testText.text = "API 호출 에러: ${t.localizedMessage}"
+            }
+        })
     }
 }

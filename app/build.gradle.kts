@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.gms.google-services") // ✅ 그대로 유지
+    // id("com.google.gms.google-services") // firebase authentication 미사용, firestore 미구현에 따른 비활성화 진행, google-servies.json 삭제된 상태임
 }
 
 
@@ -16,6 +16,12 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "GEMINI_API_KEY",
+            "\"${project.findProperty("GEMINI_API_KEY")}\""
+        )
     }
 
     signingConfigs {
@@ -52,6 +58,7 @@ android {
     buildFeatures {
         compose = false // ✅ 비활성화
         viewBinding = true // ✅ 활성화
+        buildConfig = true // ✅ 활성화
     }
 }
 
@@ -64,10 +71,13 @@ dependencies {
 
     // ✅ Firebase BOM 및 Auth 추가
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-auth-ktx:23.0.0")
 
-    // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:21.0.0")
+    // ✅ Gemini API 호출을 위한 네트워크 라이브러리
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
 
     // 테스트
     testImplementation(libs.junit)

@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.ecoworld" />
-                  <option name="mobileSdkAppId" value="1:294431221813:android:c6135093bf0bceb7cf697c" />
-                  <option name="projectId" value="ecoworld-79a9c" />
-                  <option name="projectNumber" value="294431221813" />
+                  <option name="appId" value="PLACEHOLDER" />
+                  <option name="mobileSdkAppId" value="" />
+                  <option name="projectId" value="" />
+                  <option name="projectNumber" value="" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
