@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">EcoWorld</string>
+    <string name="default_web_client_id">[복사한 Web Client ID 값]</string>
+</resources>
