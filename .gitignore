@@ -1,15 +1,41 @@
+# IDE & Project Files
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.gradle/
+.idea/
 local.properties
+gradle.properties
+.DS_Store
+
+# Build Outputs
+/build/
+/captures/
+/.externalNativeBuild/
+/.cxx/
+
+# OS Generated Files
+Thumbs.db
+ehthumbs.db
+Icon?
+Desktop.ini
+
+# Logs & Temporary Files
+*.log
+*.tmp
+
+# Security & Environment Files
+*.jks
+*.keystore
+.env
+.env.*
+
+# Crashlytics / Firebase
+crashlytics-build.properties
+fabric.properties
+
+# Android Studio Generated Files
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
