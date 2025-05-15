@@ -32,7 +32,12 @@ class ChatBotActivity : AppCompatActivity() {
                 addMessage(ChatMessage(userMessage, isUser = true))
                 binding.editMessage.text.clear()
 
-                callGeminiAPI(userMessage)  // ✅ Gemini API 호출
+                // 429 erorr로 인한 api 호출 주석 처리(TODO: API 연동 복구)
+                // callGeminiAPI(userMessage)   ✅ Gemini API 호출
+
+                // ✅ [테스트용 하드코딩 응답]
+                val fakeResponse = "테스트 응답: '$userMessage'에 대한 가짜 답변입니다."
+                addMessage(ChatMessage(fakeResponse, isUser = false))
             }
         }
     }
