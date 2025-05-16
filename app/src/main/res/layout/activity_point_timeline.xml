@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- ✅ 3/7 위치에 가이드라인 배치 -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintGuide_percent="0.428"
+        android:orientation="horizontal" />
+
+    <!-- ✅ 상단 캐릭터 & 정보 요약 -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/summarySection"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/guidelineHorizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/ivCharacter"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ecoworld_main"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/tvTotalPoints"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="1320 pt"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            app:layout_constraintTop_toTopOf="@id/ivCharacter"
+            app:layout_constraintStart_toEndOf="@id/ivCharacter"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="24dp" />
+
+        <TextView
+            android:id="@+id/tvCO2Reduction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="CO₂ 절감: 152.0 kg"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/tvTotalPoints"
+            app:layout_constraintStart_toEndOf="@id/ivCharacter"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/tvTreeEffect"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="나무 효과: 23그루"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/tvCO2Reduction"
+            app:layout_constraintStart_toEndOf="@id/ivCharacter"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- ✅ 하단 타임라인 RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/timelineRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/guidelineHorizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

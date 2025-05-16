@@ -17,12 +17,11 @@ class MissionActivity : AppCompatActivity() {
         binding = ActivityMissionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // ✅ 뒤로 가기 버튼 활성화
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         missionAdapter = MissionAdapter(MissionManager.missions) { mission ->
             if (mission.isCompleted) {
-                MissionManager.claimRewards { rewardPoints ->
+                MissionManager.claimRewards { rewardPoints: Int ->
                     Toast.makeText(this, "🎁 보상 +$rewardPoints 포인트 지급!", Toast.LENGTH_SHORT).show()
                 }
                 missionAdapter.notifyDataSetChanged()
@@ -37,7 +36,6 @@ class MissionActivity : AppCompatActivity() {
         }
     }
 
-    // ✅ 뒤로 가기 버튼 클릭 시 Activity 종료
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             finish()

@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="12dp"
-    android:elevation="6dp"
+    android:layout_margin="8dp"
+    android:elevation="4dp"
     android:radius="12dp">
 
     <LinearLayout
@@ -14,27 +14,19 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/tvMissionTitle"
+            android:id="@+id/tvDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="미션 제목"
-            android:textSize="18sp"
+            android:text="2025-05-16"
             android:textStyle="bold"
-            android:paddingBottom="8dp" />
+            android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/tvMissionProgress"
+            android:id="@+id/tvDetails"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="진행: 0 / 0"
+            android:text="포인트: +50pt, CO₂ 절감: +5kg"
             android:textSize="14sp"
-            android:paddingBottom="12dp" />
-
-        <Button
-            android:id="@+id/btnReceiveReward"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="보상 받기"
-            android:enabled="false" />
+            android:layout_marginTop="8dp" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -3,6 +3,7 @@ package com.example.ecoworld
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.example.ecoworld.api.*
@@ -24,29 +25,24 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         binding.btnChatbot.setOnClickListener {
-            val intent = Intent(this, ChatBotActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, ChatBotActivity::class.java))
         }
 
         binding.btnMission.setOnClickListener {
-            val intent = Intent(this, MissionActivity::class.java)
+            startActivity(Intent(this, MissionActivity::class.java))
+        }
+
+        binding.btnTimeline.setOnClickListener {
+            val intent = Intent(this, PointTimelineActivity::class.java)
             startActivity(intent)
         }
+
+        // ✅ 테스트로 앱 시작 시 API 호출
+        callGeminiAPI()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            finish()
-            return true
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    // ✅ Gemini API 호출 함수 (테스트용)
     private fun callGeminiAPI() {
         val apiKey = BuildConfig.GEMINI_API_KEY
-        Log.d("API_KEY_CHECK", "API KEY: $apiKey")
-
         val apiService = RetrofitClient.getClient(apiKey)
 
         val request = GeminiRequest(
@@ -59,22 +55,36 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        Log.d("FINAL_REQUEST_JSON", gson.toJson(request))
+        // 로딩 시작
+        binding.progressBar.visibility = View.VISIBLE
+        binding.cardResult.visibility = View.GONE
 
         apiService.askGemini(request).enqueue(object : Callback<GeminiResponse> {
             override fun onResponse(call: Call<GeminiResponse>, response: Response<GeminiResponse>) {
+                binding.progressBar.visibility = View.GONE
+                binding.cardResult.visibility = View.VISIBLE
+
                 if (response.isSuccessful) {
                     val answer = response.body()?.candidates?.getOrNull(0)?.get("content")
-                    binding.testText.text = answer ?: "답변 없음"
+                    binding.testText.text = answer ?: "답변이 없습니다."
                 } else {
                     binding.testText.text = "API 호출 실패: ${response.code()}"
                 }
             }
 
             override fun onFailure(call: Call<GeminiResponse>, t: Throwable) {
+                binding.progressBar.visibility = View.GONE
+                binding.cardResult.visibility = View.VISIBLE
                 binding.testText.text = "API 호출 에러: ${t.localizedMessage}"
             }
         })
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

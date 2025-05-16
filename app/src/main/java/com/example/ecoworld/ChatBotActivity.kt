@@ -1,13 +1,12 @@
 package com.example.ecoworld
 
 import android.content.Context
-import android.os.Bundle
-import android.widget.Toast
 import android.content.Intent
+import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.ecoworld.api.*
 import com.example.ecoworld.databinding.ActivityChatBotBinding
 
 class ChatBotActivity : AppCompatActivity() {
@@ -28,7 +27,6 @@ class ChatBotActivity : AppCompatActivity() {
         binding = ActivityChatBotBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // ✅ 뒤로 가기 버튼 활성화
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         loadUserData()
@@ -40,22 +38,32 @@ class ChatBotActivity : AppCompatActivity() {
         }
 
         binding.btnMission.setOnClickListener {
-            val intent = Intent(this, MissionActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, MissionActivity::class.java))
         }
 
+        // ✅ 메시지 전송 (미션 진행 + 보상 체크)
         binding.btnSend.setOnClickListener {
             val userMessage = binding.editMessage.text.toString()
             if (userMessage.isNotBlank()) {
                 addMessage(ChatMessage(userMessage, isUser = true))
                 binding.editMessage.text.clear()
 
-                addPoints(1)
+                addPoints(1)  // 기본 포인트
                 MissionManager.updateMissionProgress("message")
+                MissionManager.claimDailyMissionReward { rewardPoints ->
+                    addPoints(rewardPoints)
+                    Toast.makeText(this, "🎉 일일 미션 클리어! +$rewardPoints pt", Toast.LENGTH_LONG).show()
+                }
 
                 val fakeResponse = "테스트 응답: '$userMessage'에 대한 답변입니다."
                 addMessage(ChatMessage(fakeResponse, isUser = false))
             }
+        }
+
+        // ✅ 사진 업로드 버튼
+        binding.btnPhotoUpload.setOnClickListener {
+            // TODO: 실제 사진 업로드/촬영 로직 연결
+            handlePhotoUploadResponse(aiAccuracy = 92.5)
         }
 
         updateStatusUI()
@@ -91,14 +99,15 @@ class ChatBotActivity : AppCompatActivity() {
 
     private fun updateStatusUI() {
         binding.statusText.text = "포인트: $points | 레벨: $level"
-        updateCharacterImage()
+        updateCharacterImage(points)
     }
 
-    private fun updateCharacterImage() {
-        val resId = when (level) {
-            in 1..3 -> R.drawable.ecoworld_basic
-            in 4..7 -> R.drawable.ecoworld_mid
-            else -> R.drawable.ecoworld_end
+    private fun updateCharacterImage(currentPoints: Int) {
+        val resId = when (currentPoints) {
+            in 0..499 -> R.drawable.ecoworld_basic
+            in 500..999 -> R.drawable.ecoworld_mid
+            in 1000..1499 -> R.drawable.ecoworld_end
+            else -> R.drawable.ecoworld_main
         }
         binding.characterImage.setImageResource(resId)
     }
@@ -116,5 +125,46 @@ class ChatBotActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         points = prefs.getInt(KEY_POINTS, 0)
         level = prefs.getInt(KEY_LEVEL, 1)
+    }
+
+    // ✅ 사진 업로드 처리
+    private fun handlePhotoUploadResponse(aiAccuracy: Double?) {
+        val basePoints = 50
+        var totalPoints = basePoints
+
+        if (aiAccuracy != null && aiAccuracy >= 90.0) {
+            totalPoints += 20
+        }
+
+        addPoints(totalPoints)
+        MissionManager.updateMissionProgress("photo_upload")
+        MissionManager.claimDailyMissionReward { rewardPoints ->
+            addPoints(rewardPoints)
+            Toast.makeText(this, "🎉 일일 미션 클리어! +$rewardPoints pt", Toast.LENGTH_LONG).show()
+        }
+
+        Toast.makeText(this, "📸 사진 업로드 보상: +$totalPoints pt", Toast.LENGTH_SHORT).show()
+    }
+
+    // ✅ 분리배출 처리
+    private fun handleClassificationResult(isCorrectlyClassified: Boolean, isCleanState: Boolean) {
+        val basePoints = if (isCorrectlyClassified) 100 else 0
+        var totalPoints = basePoints
+
+        if (isCorrectlyClassified && isCleanState) {
+            totalPoints += 30
+        }
+
+        if (basePoints > 0) {
+            addPoints(totalPoints)
+            MissionManager.updateMissionProgress("classification")
+            MissionManager.claimDailyMissionReward { rewardPoints ->
+                addPoints(rewardPoints)
+                Toast.makeText(this, "🎉 일일 미션 클리어! +$rewardPoints pt", Toast.LENGTH_LONG).show()
+            }
+            Toast.makeText(this, "✅ 분리배출 성공 보상: +$totalPoints pt", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "❌ 분리배출 실패! 다시 시도하세요.", Toast.LENGTH_SHORT).show()
+        }
     }
 }

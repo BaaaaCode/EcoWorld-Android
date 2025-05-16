@@ -1,37 +1,33 @@
 package com.example.ecoworld
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.ecoworld.databinding.ItemMissionBinding
 
 class MissionAdapter(
     private val missions: List<Mission>,
     private val onRewardClick: (Mission) -> Unit
 ) : RecyclerView.Adapter<MissionAdapter.MissionViewHolder>() {
 
-    inner class MissionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val description: TextView = view.findViewById(R.id.missionDescription)
-        val progress: TextView = view.findViewById(R.id.missionProgress)
-        val rewardButton: Button = view.findViewById(R.id.rewardButton)
-    }
+    inner class MissionViewHolder(val binding: ItemMissionBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MissionViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_mission, parent, false)
-        return MissionViewHolder(view)
+        val binding = ItemMissionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return MissionViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: MissionViewHolder, position: Int) {
         val mission = missions[position]
-        holder.description.text = mission.description
-        holder.progress.text = "진행: ${mission.currentCount} / ${mission.targetCount}"
 
-        holder.rewardButton.isEnabled = mission.isCompleted
-        holder.rewardButton.setOnClickListener {
-            onRewardClick(mission)
+        holder.binding.apply {
+            tvMissionTitle.text = mission.description
+            tvMissionProgress.text = "진행: ${mission.currentCount} / ${mission.targetCount}"
+
+            btnReceiveReward.isEnabled = mission.isCompleted
+            btnReceiveReward.setOnClickListener {
+                onRewardClick(mission)
+            }
         }
     }
 
