@@ -1,4 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="Theme.EcoWorld" parent="Theme.AppCompat.Light.DarkActionBar" />
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base app theme without ActionBar -->
+    <style name="Theme.EcoWorld" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary color settings -->
+        <item name="colorPrimary">#4CAF50</item> <!-- 그린 포인트 컬러 -->
+        <item name="colorPrimaryVariant">#388E3C</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <!-- Secondary color settings -->
+        <item name="colorSecondary">#FFC107</item> <!-- 포인트 보상 강조 컬러 -->
+        <item name="colorSecondaryVariant">#FFA000</item>
+        <item name="colorOnSecondary">#000000</item>
+
+        <!-- StatusBar, NavigationBar 컬러 설정 (필요 시) -->
+        <item name="android:statusBarColor" tools:targetApi="l">#FFF8E7</item>
+        <item name="android:navigationBarColor" tools:targetApi="l">#FFFFFF</item>
+
+        <!-- Disable ActionBar completely -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- Customize fonts globally if needed -->
+        <!-- <item name="android:fontFamily">@font/noto_sans</item> -->  <!-- 필요 시 폰트 리소스 추가 -->
+    </style>
 </resources>

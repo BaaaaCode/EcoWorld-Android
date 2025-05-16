@@ -2,89 +2,69 @@ package com.example.ecoworld
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import com.example.ecoworld.api.*
 import com.example.ecoworld.databinding.ActivityMainBinding
-import com.google.gson.GsonBuilder
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private var currentPoints = 1320  // ✅ 테스트용 포인트 (추후 포인트 적립 로직과 연동 가능)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        // ✅ 상단 정보 표시
+        binding.tvTotalPoints.text = "$currentPoints pt"
+        binding.tvRecentTimeline.text = "포인트 +50pt, CO₂ 절감 +5kg"
 
-        binding.btnChatbot.setOnClickListener {
-            startActivity(Intent(this, ChatBotActivity::class.java))
+        // ✅ 캐릭터 상태 초기 표시 (onCreate 시 1회 호출)
+        updateCharacterImage(currentPoints)
+
+        // ✅ 캐릭터 클릭 시 메시지 출력
+        binding.ivCharacter.setOnClickListener {
+            binding.tvCharacterMessage.text = "오늘도 분리배출을 실천해요!"
         }
 
-        binding.btnMission.setOnClickListener {
-            startActivity(Intent(this, MissionActivity::class.java))
-        }
-
-        binding.btnTimeline.setOnClickListener {
-            val intent = Intent(this, PointTimelineActivity::class.java)
-            startActivity(intent)
-        }
-
-        // ✅ 테스트로 앱 시작 시 API 호출
-        callGeminiAPI()
-    }
-
-    private fun callGeminiAPI() {
-        val apiKey = BuildConfig.GEMINI_API_KEY
-        val apiService = RetrofitClient.getClient(apiKey)
-
-        val request = GeminiRequest(
-            contents = listOf(
-                GeminiContent(
-                    parts = listOf(
-                        GeminiPart("이 플라스틱 컵은 어떻게 버려야 해?")
-                    )
-                )
-            )
-        )
-
-        // 로딩 시작
-        binding.progressBar.visibility = View.VISIBLE
-        binding.cardResult.visibility = View.GONE
-
-        apiService.askGemini(request).enqueue(object : Callback<GeminiResponse> {
-            override fun onResponse(call: Call<GeminiResponse>, response: Response<GeminiResponse>) {
-                binding.progressBar.visibility = View.GONE
-                binding.cardResult.visibility = View.VISIBLE
-
-                if (response.isSuccessful) {
-                    val answer = response.body()?.candidates?.getOrNull(0)?.get("content")
-                    binding.testText.text = answer ?: "답변이 없습니다."
-                } else {
-                    binding.testText.text = "API 호출 실패: ${response.code()}"
+        // ✅ 하단 네비게이션 이벤트 처리
+        binding.bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_chatbot -> {
+                    startActivity(Intent(this, ChatBotActivity::class.java))
+                    true
                 }
+                R.id.nav_calendar -> {
+                    startActivity(Intent(this, PointTimelineActivity::class.java)) // 캘린더 → 타임라인
+                    true
+                }
+                R.id.nav_points -> {
+                    startActivity(Intent(this, MissionActivity::class.java)) // ✅ 포인트 → 미션 화면으로 이동
+                    true
+                }
+                R.id.nav_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                }
+                else -> false
             }
-
-            override fun onFailure(call: Call<GeminiResponse>, t: Throwable) {
-                binding.progressBar.visibility = View.GONE
-                binding.cardResult.visibility = View.VISIBLE
-                binding.testText.text = "API 호출 에러: ${t.localizedMessage}"
-            }
-        })
+        }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            finish()
-            return true
+    // ✅ 홈 화면으로 돌아올 때 캐릭터 상태 최신화
+    override fun onResume() {
+        super.onResume()
+        updateCharacterImage(currentPoints)
+    }
+
+    // ✅ 캐릭터 이미지 업데이트 로직 (포인트 기준)
+    private fun updateCharacterImage(points: Int) {
+        val imageResId = when (points) {
+            in 0..100 -> R.drawable.ecoworld_basic
+            in 101..500 -> R.drawable.ecoworld_mid
+            in 501..1000 -> R.drawable.ecoworld_end
+            else -> R.drawable.ecoworld_main
         }
-        return super.onOptionsItemSelected(item)
+        binding.ivCharacter.setImageResource(imageResId)
     }
 }

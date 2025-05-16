@@ -25,6 +25,10 @@
 
         <!-- 메인 액티비티 -->
         <activity
+            android:name=".PointTimelineActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
