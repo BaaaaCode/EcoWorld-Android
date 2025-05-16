@@ -1,13 +1,14 @@
 package com.example.ecoworld
 
+import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
+import android.content.Intent
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.ecoworld.api.*
 import com.example.ecoworld.databinding.ActivityChatBotBinding
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class ChatBotActivity : AppCompatActivity() {
 
@@ -15,15 +16,32 @@ class ChatBotActivity : AppCompatActivity() {
     private lateinit var chatAdapter: ChatAdapter
     private val messages = mutableListOf<ChatMessage>()
 
+    private val PREFS_NAME = "EcoWorldPrefs"
+    private val KEY_POINTS = "user_points"
+    private val KEY_LEVEL = "user_level"
+
+    private var points = 0
+    private var level = 1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBotBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // ✅ 뒤로 가기 버튼 활성화
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        loadUserData()
+
         chatAdapter = ChatAdapter(messages)
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(this@ChatBotActivity)
             adapter = chatAdapter
+        }
+
+        binding.btnMission.setOnClickListener {
+            val intent = Intent(this, MissionActivity::class.java)
+            startActivity(intent)
         }
 
         binding.btnSend.setOnClickListener {
@@ -32,14 +50,23 @@ class ChatBotActivity : AppCompatActivity() {
                 addMessage(ChatMessage(userMessage, isUser = true))
                 binding.editMessage.text.clear()
 
-                // 429 erorr로 인한 api 호출 주석 처리(TODO: API 연동 복구)
-                // callGeminiAPI(userMessage)   ✅ Gemini API 호출
+                addPoints(1)
+                MissionManager.updateMissionProgress("message")
 
-                // ✅ [테스트용 하드코딩 응답]
-                val fakeResponse = "테스트 응답: '$userMessage'에 대한 가짜 답변입니다."
+                val fakeResponse = "테스트 응답: '$userMessage'에 대한 답변입니다."
                 addMessage(ChatMessage(fakeResponse, isUser = false))
             }
         }
+
+        updateStatusUI()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun addMessage(message: ChatMessage) {
@@ -48,33 +75,46 @@ class ChatBotActivity : AppCompatActivity() {
         binding.recyclerView.scrollToPosition(messages.size - 1)
     }
 
-    private fun callGeminiAPI(prompt: String) {
-        val apiKey = BuildConfig.GEMINI_API_KEY  // ✅ build.gradle.kts에 반드시 API Key 정의 필요!
-        val apiService = RetrofitClient.getClient(apiKey)
+    private fun addPoints(amount: Int) {
+        points += amount
+        Toast.makeText(this, "포인트 +$amount (총: $points)", Toast.LENGTH_SHORT).show()
 
-        val request = GeminiRequest(
-            contents = listOf(
-                GeminiContent(
-                    parts = listOf(
-                        GeminiPart(prompt)
-                    )
-                )
-            )
-        )
+        val requiredPoints = 100 * (level * level)
+        if (points >= requiredPoints) {
+            level++
+            Toast.makeText(this, "🎉 레벨 $level 달성!", Toast.LENGTH_LONG).show()
+        }
 
-        apiService.askGemini(request).enqueue(object : Callback<GeminiResponse> {
-            override fun onResponse(call: Call<GeminiResponse>, response: Response<GeminiResponse>) {
-                if (response.isSuccessful) {
-                    val answer = response.body()?.candidates?.getOrNull(0)?.get("content")
-                    addMessage(ChatMessage(answer ?: "답변 없음", isUser = false))
-                } else {
-                    addMessage(ChatMessage("API 호출 실패: ${response.code()}", isUser = false))
-                }
-            }
+        updateStatusUI()
+        saveUserData()
+    }
 
-            override fun onFailure(call: Call<GeminiResponse>, t: Throwable) {
-                addMessage(ChatMessage("API 호출 에러: ${t.localizedMessage}", isUser = false))
-            }
-        })
+    private fun updateStatusUI() {
+        binding.statusText.text = "포인트: $points | 레벨: $level"
+        updateCharacterImage()
+    }
+
+    private fun updateCharacterImage() {
+        val resId = when (level) {
+            in 1..3 -> R.drawable.ecoworld_basic
+            in 4..7 -> R.drawable.ecoworld_mid
+            else -> R.drawable.ecoworld_end
+        }
+        binding.characterImage.setImageResource(resId)
+    }
+
+    private fun saveUserData() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            putInt(KEY_POINTS, points)
+            putInt(KEY_LEVEL, level)
+            apply()
+        }
+    }
+
+    private fun loadUserData() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        points = prefs.getInt(KEY_POINTS, 0)
+        level = prefs.getInt(KEY_LEVEL, 1)
     }
 }

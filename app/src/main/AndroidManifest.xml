@@ -15,6 +15,9 @@
         android:theme="@style/Theme.EcoWorld"
         tools:targetApi="31">
         <activity
+            android:name=".MissionActivity"
+            android:exported="false" />
+        <activity
             android:name=".ChatBotActivity"
             android:exported="false" />
         <activity
